@@ -4,6 +4,7 @@ import com.example.redNorte.demo.dto.*;
 import com.example.redNorte.demo.model.Pacientes;
 import com.example.redNorte.demo.repository.PacientesRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,9 +32,15 @@ public class PacientesService {
                 .contrasena(passwordEncoder.encode(request.getContrasena())) // 👈 usa el bean
                 .direccion(request.getDireccion())
                 .build();
+        try {
+            pacientesRepository.save(paciente);
+            return "Paciente registrado correctamente";
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos inválidos: " + e.getMessage());
+        }
 
-        pacientesRepository.save(paciente);
-        return "Paciente registrado con éxito";
+   //     pacientesRepository.save(paciente);
+   //     return "Paciente registrado con éxito";
     }
 
     public AuthResponse login(LoginPacienteRequest request) {
